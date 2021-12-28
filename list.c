@@ -11,81 +11,66 @@ struct listnode {
     struct listnode* next;
 };
 
-struct linkedlist {
-    struct listnode* head;
-    struct listnode* tail;
-};
+int listlen(struct listnode* head) {
+    struct listnode* lp;
+    int count = 0;
 
-struct linkedlist listcreate() {
-    struct linkedlist newlist;
+    lp = head;
+    while (lp != NULL) {
+        count++;
+        lp = lp->next;
+    }
 
-    newlist.head = NULL;
-    newlist.tail = NULL;
-
-    return newlist;
+    return count;
 }
 
-void listadd(struct linkedlist** list, char* data) {
-    struct listnode* newnode;
+void listpush(struct listnode** head, char* data) {
+    struct listnode* newnode = (struct listnode*) malloc(sizeof(struct listnode));
     char* newdata;
     int datasize = 0;
 
-    datasize = strnlen(data, 255);
-    if (datasize == 255) newdata[255] = '\0';
+    // figure out the len of the data, cap it at 256
+    datasize = strnlen(data, 256);
+    if (datasize == 256) newdata[255] = '\0';
 
-    newnode = (struct listnode*) malloc(sizeof(struct listnode));
+    newdata = (char*) malloc(sizeof(char) * datasize);
+    strncpy(newdata, data, datasize);
+    newnode->data = newdata;
+
+    newnode->next = *head;
+    *head = newnode;
+}
+
+void listappend(struct listnode** tail, char* data) {
+    struct listnode* newnode = (struct listnode*) malloc(sizeof(struct listnode));
+    char* newdata;
+    int datasize = 0;
+
+    // figure out the len of the data, cap it at 256
+    datasize = strnlen(data, 256);
+    if (datasize == 256) newdata[255] = '\0';
+
     newdata = (char*) malloc(sizeof(char) * datasize);
     strncpy(newdata, data, datasize);
     newnode->data = newdata;
     newnode->next = NULL;
 
-    if ((*list)->tail == NULL) {
-        (*list)->head = newnode;
-        (*list)->tail = newnode;
-    } else {
-        ((*list)->tail)->next = newnode;
-        (*list)->tail = newnode;
+    if (*tail != NULL) {
+        (*tail)->next = newnode;
     }
+    *tail = newnode;
 }
 
-void listremove(struct linkedlist** list, struct listnode** beforerm, struct listnode** remove) {
-    // First node in the list
-    if ((*list)->head == *remove) {
-        (*list)->head = (*remove)->next;
-    } else {
-        // If not, then it must have a node before
-        (*beforerm)->next = (*remove)->next;
-    }
-
-    // Readjust tail if needed
-    if (*remove == (*list)->tail) {
-        (*list)->tail = (*beforerm);
-    }
-
-    free(*remove);
-    *remove = NULL;
-}
-
-void listprint(struct linkedlist* list, char* comment) {
+void listprint(struct listnode* head, char* comment) {
     struct listnode* lptr;
+    int index = 0;
 
-    printf("%s\nLIST %p\n", comment, list);
+    printf("%s\nLINKED LIST %p\n", comment, head);
 
-    lptr = list->head;
+    lptr = head;
     while (lptr !=NULL) {
-        printf("  |-- NODE (%p) = %s\n", lptr, lptr->data);
+        printf("  |-- [%05d] NODE (%p) = %s\n", index, lptr, lptr->data);
         lptr = lptr->next;
+        index++;
     }
-}
-
-int main() {
-    struct linkedlist list = listcreate();
-    struct linkedlist* listptr = &list;
-
-    listadd(&listptr, "ELEMENT 1");
-    listadd(&listptr, "ELEMENT 2");
-    listadd(&listptr, "ELEMENT 3");
-    listadd(&listptr, "ELEMENT 4");
-
-    listprint(listptr, "");
 }
